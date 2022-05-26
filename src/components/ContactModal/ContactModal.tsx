@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import styles from "./ContactModal.module.css";
 
-export default function ContactModal({ submit }: { submit?: VoidFunction }) {
+export default function ContactModal({ submit }: { submit?: Function }) {
   const [isValid, setIsValid] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -14,36 +14,45 @@ export default function ContactModal({ submit }: { submit?: VoidFunction }) {
     email?: string;
   }>({});
 
+  const [formDirty, setFormDirty] = useState(false);
+
   useEffect(() => {
-    setErrors({
-      name: name ? "" : "Name required",
-      phone: phone
-        ? /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(
+    if ((name || phone || email) && formDirty === false) {
+      setFormDirty(true);
+    }
+
+    if (formDirty) {
+      setErrors({
+        name: name ? "" : "Name required",
+        phone: phone
+          ? /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(
+              phone
+            )
+            ? ""
+            : "Phone is improperly formatted"
+          : "Phone number required",
+        email: email
+          ? /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/.test(email)
+            ? ""
+            : "Email is improperly formatted"
+          : "Email address required",
+      });
+      setIsValid(
+        !!name &&
+          !!phone &&
+          !!email &&
+          /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(
             phone
-          )
-          ? ""
-          : "Phone is improperly formatted"
-        : "Phone number required",
-      email: email
-        ? /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/.test(email)
-          ? ""
-          : "Email is improperly formatted"
-        : "Email address required",
-    });
-    setIsValid(
-      !!name &&
-        !!phone &&
-        !!email &&
-        /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(
-          phone
-        ) &&
-        /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/.test(email)
-    );
+          ) &&
+          /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/.test(email)
+      );
+    }
   }, [name, phone, email]);
 
   return (
     <div className={styles.ContactModal}>
       <form
+        data-testid="modal-form"
         onSubmit={(e) => {
           e.preventDefault();
           if (isValid) {
@@ -58,7 +67,9 @@ export default function ContactModal({ submit }: { submit?: VoidFunction }) {
           type="text"
         />
         {errors["name"] && (
-          <span className={styles.error}>{errors["name"]}</span>
+          <span data-testid="error" className={styles.error}>
+            {errors["name"]}
+          </span>
         )}
         <input
           placeholder="Phone Number"
@@ -66,7 +77,9 @@ export default function ContactModal({ submit }: { submit?: VoidFunction }) {
           onChange={(e) => setPhone(e.target.value)}
         />
         {errors["phone"] && (
-          <span className={styles.error}>{errors["phone"]}</span>
+          <span data-testid="error" className={styles.error}>
+            {errors["phone"]}
+          </span>
         )}
         <input
           placeholder="Email Address"
@@ -75,7 +88,9 @@ export default function ContactModal({ submit }: { submit?: VoidFunction }) {
           type="email"
         />
         {errors["email"] && (
-          <span className={styles.error}>{errors["email"]}</span>
+          <span data-testid="error" className={styles.error}>
+            {errors["email"]}
+          </span>
         )}
         <button disabled={!isValid} type="submit">
           Submit

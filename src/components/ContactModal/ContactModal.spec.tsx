@@ -23,6 +23,14 @@ describe("ContactModal", () => {
     expect(phoneInput).toHaveValue("");
     expect(emailInput).toHaveValue("");
     expect(submitButton).toBeDisabled();
+
+    const nameError = screen.queryByText("Name required");
+    const phoneError = screen.queryByText("Phone is improperly formatted");
+    const emailError = screen.queryByText("Email is improperly formatted");
+
+    expect(nameError).not.toBeInTheDocument();
+    expect(phoneError).not.toBeInTheDocument();
+    expect(emailError).not.toBeInTheDocument();
   });
 
   it("Disables submit button until form is valid", () => {
@@ -55,9 +63,9 @@ describe("ContactModal", () => {
     fireEvent.change(phoneInput!, { target: { value: "1234567" } });
     fireEvent.change(emailInput!, { target: { value: "@email.com" } });
 
-    const nameError = screen.getByText("Name required");
-    const phoneError = screen.getByText("Phone is improperly formatted");
-    const emailError = screen.getByText("Email is improperly formatted");
+    const nameError = screen.queryByText("Name required");
+    const phoneError = screen.queryByText("Phone is improperly formatted");
+    const emailError = screen.queryByText("Email is improperly formatted");
 
     expect(nameError).toBeInTheDocument();
     expect(phoneError).toBeInTheDocument();
@@ -74,5 +82,32 @@ describe("ContactModal", () => {
     fireEvent.change(emailInput!, { target: { value: "me@email.com" } });
 
     expect(emailError).not.toBeInTheDocument();
+  });
+
+  it("Prevents submit function from being called if invalid", () => {
+    // arrange
+    const onSubmit = jest.fn();
+    render(<ContactModal submit={onSubmit} />);
+
+    // act
+    const nameInput = screen.queryByPlaceholderText("Name");
+    const phoneInput = screen.queryByPlaceholderText("Phone Number");
+    const emailInput = screen.queryByPlaceholderText("Email Address");
+    const submitButton = screen.getByText("Submit");
+    const form = screen.getByTestId("modal-form");
+
+    fireEvent.submit(form);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    fireEvent.change(nameInput!, { target: { value: "My Name" } });
+    fireEvent.change(phoneInput!, { target: { value: "123-456-7890" } });
+    fireEvent.change(emailInput!, { target: { value: "my@email.com" } });
+
+    expect(submitButton).not.toBeDisabled();
+
+    fireEvent.submit(form);
+
+    expect(onSubmit).toHaveBeenCalled();
   });
 });
