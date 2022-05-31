@@ -2,16 +2,26 @@ import { useEffect, useState } from "react";
 
 import styles from "./ContactModal.module.css";
 
-export default function ContactModal({ submit }: { submit?: Function }) {
+export default function ContactModal({
+  submit,
+  contact,
+}: {
+  submit?: Function;
+  contact?: { name: string; phone: string; email: string };
+}) {
   const [isValid, setIsValid] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
+  const phoneRegex =
+    /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+  const emailRegex = /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/;
+
   const [errors, setErrors] = useState<{
-    name?: string;
-    phone?: string;
-    email?: string;
+    nameError?: string;
+    phoneError?: string;
+    emailError?: string;
   }>({});
 
   const [formDirty, setFormDirty] = useState(false);
@@ -23,28 +33,24 @@ export default function ContactModal({ submit }: { submit?: Function }) {
 
     if (formDirty) {
       setErrors({
-        name: name ? "" : "Name required",
-        phone: phone
-          ? /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(
-              phone
-            )
-            ? ""
-            : "Phone is improperly formatted"
-          : "Phone number required",
-        email: email
-          ? /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/.test(email)
-            ? ""
-            : "Email is improperly formatted"
-          : "Email address required",
+        ...(!name && { nameError: "Name is required" }),
+        ...(!phone && { phoneError: "Phone number required" }),
+        ...(phone &&
+          !phoneRegex.test(phone) && {
+            phoneError: "Phone is improperly formatted",
+          }),
+        ...(!email && { emailError: "Email address required" }),
+        ...(email &&
+          !emailRegex.test(email) && {
+            emailError: "Email is improperly formatted",
+          }),
       });
       setIsValid(
         !!name &&
           !!phone &&
           !!email &&
-          /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(
-            phone
-          ) &&
-          /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/.test(email)
+          phoneRegex.test(phone) &&
+          emailRegex.test(email)
       );
     }
   }, [name, phone, email]);
@@ -63,12 +69,15 @@ export default function ContactModal({ submit }: { submit?: Function }) {
         <input
           placeholder="Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            console.log(e.target.value);
+            setName(e.target.value);
+          }}
           type="text"
         />
-        {errors["name"] && (
+        {errors["nameError"] && (
           <span data-testid="error" className={styles.error}>
-            {errors["name"]}
+            {errors["nameError"]}
           </span>
         )}
         <input
@@ -76,9 +85,9 @@ export default function ContactModal({ submit }: { submit?: Function }) {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
-        {errors["phone"] && (
+        {errors["phoneError"] && (
           <span data-testid="error" className={styles.error}>
-            {errors["phone"]}
+            {errors["phoneError"]}
           </span>
         )}
         <input
@@ -87,9 +96,9 @@ export default function ContactModal({ submit }: { submit?: Function }) {
           onChange={(e) => setEmail(e.target.value)}
           type="email"
         />
-        {errors["email"] && (
+        {errors["emailError"] && (
           <span data-testid="error" className={styles.error}>
-            {errors["email"]}
+            {errors["emailError"]}
           </span>
         )}
         <button disabled={!isValid} type="submit">

@@ -1,10 +1,8 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import ContactModal from "./ContactModal";
 
-afterEach(cleanup);
-
-describe("ContactModal", () => {
+describe("Create Contact Tests", () => {
   it("should initialize an empty form", () => {
     // arrange
     render(<ContactModal />);
@@ -63,7 +61,7 @@ describe("ContactModal", () => {
     fireEvent.change(phoneInput!, { target: { value: "1234567" } });
     fireEvent.change(emailInput!, { target: { value: "@email.com" } });
 
-    const nameError = screen.queryByText("Name required");
+    const nameError = screen.queryByText("Name is required");
     const phoneError = screen.queryByText("Phone is improperly formatted");
     const emailError = screen.queryByText("Email is improperly formatted");
 
@@ -109,5 +107,39 @@ describe("ContactModal", () => {
     fireEvent.submit(form);
 
     expect(onSubmit).toHaveBeenCalled();
+  });
+});
+
+describe("Edit Contact Tests", () => {
+  it("should initialize a form with contact info", () => {
+    // arrange
+    render(
+      <ContactModal
+        contact={{ name: "Joe", phone: "12345678910", email: "joe@mama.com" }}
+      />
+    );
+
+    // act
+    const nameInput = screen.queryByPlaceholderText("Name");
+    const phoneInput = screen.queryByPlaceholderText("Phone Number");
+    const emailInput = screen.queryByPlaceholderText("Email Address");
+    const submitButton = screen.getByText("Submit");
+
+    // assert
+    expect(nameInput).toBeInTheDocument();
+    expect(phoneInput).toBeInTheDocument();
+    expect(emailInput).toBeInTheDocument();
+    expect(nameInput).toHaveValue("Joe");
+    expect(phoneInput).toHaveValue("12345678910");
+    expect(emailInput).toHaveValue("joe@mama.com");
+    expect(submitButton).not.toBeDisabled();
+
+    const nameError = screen.queryByText("Name required");
+    const phoneError = screen.queryByText("Phone is improperly formatted");
+    const emailError = screen.queryByText("Email is improperly formatted");
+
+    expect(nameError).not.toBeInTheDocument();
+    expect(phoneError).not.toBeInTheDocument();
+    expect(emailError).not.toBeInTheDocument();
   });
 });
