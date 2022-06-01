@@ -2,17 +2,16 @@ import { useEffect, useState } from "react";
 
 import styles from "./ContactModal.module.css";
 
-export default function ContactModal({
-  submit,
-  contact,
-}: {
+type Props = {
   submit?: Function;
   contact?: { name: string; phone: string; email: string };
-}) {
+};
+
+export default function ContactModal({ submit, contact }: Props) {
   const [isValid, setIsValid] = useState(false);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(contact?.name ?? "");
+  const [phone, setPhone] = useState(contact?.phone ?? "");
+  const [email, setEmail] = useState(contact?.email ?? "");
 
   const phoneRegex =
     /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
@@ -45,14 +44,15 @@ export default function ContactModal({
             emailError: "Email is improperly formatted",
           }),
       });
-      setIsValid(
-        !!name &&
-          !!phone &&
-          !!email &&
-          phoneRegex.test(phone) &&
-          emailRegex.test(email)
-      );
     }
+
+    setIsValid(
+      !!name &&
+        !!phone &&
+        !!email &&
+        phoneRegex.test(phone) &&
+        emailRegex.test(email)
+    );
   }, [name, phone, email]);
 
   return (
