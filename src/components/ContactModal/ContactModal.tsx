@@ -70,7 +70,6 @@ export default function ContactModal({ submit, contact }: Props) {
           placeholder="Name"
           value={name}
           onChange={(e) => {
-            console.log(e.target.value);
             setName(e.target.value);
           }}
           type="text"
